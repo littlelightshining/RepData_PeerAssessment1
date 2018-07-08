@@ -8,18 +8,39 @@ output:
 
 ## Loading and preprocessing the data
 
-
+setwd("C:/Users/carla/OneDrive/Coursera/Reproducible Research/Week2/Project1")
+unzip("data.zip")
+dir()
+data <- read.csv("activity.csv", header = TRUE, sep = ",")
 
 ## What is mean total number of steps taken per day?
 
-
+mean(dataSteps_day, na.rm = TRUE) 
+median(dataSteps_day, na.rm = TRUE))
 
 ## What is the average daily activity pattern?
 
+avr_steps_inter_5<- aggregate(steps ~ interval, data = data, 
+                                   mean, na.rm=TRUE)
+plot(mean(dataSteps, na.rm = TRUE))
+
+plot(avr_steps_inter_5, type="l", 
+     main="Time series of the average number of steps 5 min interval")
 
 
 ## Imputing missing values
 
+dataImputed <- data
+dataImputed$steps <- impute(data$steps, fun=mean)
+dataStepsImputed_day <- tapply(dataImputed$steps,dataImputed$date,sum) # average of 5 min interval
 
+hist(dataStepsImputed_day, col="red", main="Total steps per day")
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+averagedataImputed <- aggregate(steps ~ interval + dateType, data=dataImputed, mean)
+ggplot(averagedataImputed, aes(interval, steps)) +
+        geom_line() +
+        facet_grid(dateType ~ .) +
+        xlab("5-minute interval") +
+        ylab("avarage number of steps")
