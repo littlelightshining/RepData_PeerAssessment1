@@ -1,0 +1,117 @@
+---
+title: "P1_template.rmd"
+author: "littlelight"
+date: "12 de Julho de 2018"
+output: 
+  html_document: 
+    keep_md: true
+---
+
+## 1. Code for reading in the dataset and/or processing the data
+
+```{r datareading, echo=TRUE}
+
+setwd("C:/Users/carla/OneDrive/Coursera/Reproducible Research/Week2/Project1")
+unzip("data.zip")
+dir()
+data <- read.csv("activity.csv", header = TRUE, sep = ",")
+
+```
+
+## 2. Histogram of the total number of steps taken each day
+
+```{r totalstepsday, echo=TRUE}
+
+dataSteps_day <- tapply(data$steps,data$date,sum) # average of 5 min interval
+
+```
+
+```{r histogramstepsday, fig.height=4}
+
+hist(dataSteps_day, col="red", main="Total steps per day")
+
+```
+
+## 3. Mean and median number of steps taken each day
+
+```{r meanmedianstepsday, echo=TRUE}
+
+mean(dataSteps_day, na.rm = TRUE) 
+
+median(dataSteps_day, na.rm = TRUE)
+
+```
+
+## 4. Time series plot of the average number of steps taken 
+
+```{r plotavrsteps5, fig.height=4}                                   
+
+avr_steps_inter_5<- aggregate(steps ~ interval, data = data, 
+                                   mean, na.rm=TRUE)
+                                   
+plot(avr_steps_inter_5, type="l", 
+     main="Time series of the average number of steps 5 min interval")
+
+```
+
+## 5. The 5-minute interval that, on average, contains the maximum number of steps
+
+
+```{r maxsteps5, echo=TRUE}
+
+maxsteps_5<- max(tapply(avr_steps_inter_5$steps, avr_steps_inter_5$interval, max))
+
+maxinterval<- avr_steps_inter_5$interval[which.max(avr_steps_inter_5$steps)]
+
+avr_steps_inter_5[avr_steps_inter_5$steps==max(avr_steps_inter_5$steps),]
+
+```
+
+
+## 6. Code to describe and show a strategy for imputing missing data
+
+```{r loading packages, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(plyr)
+library(Hmisc)
+```
+
+```{r imputedsteps, echo=TRUE}
+
+dataImputed <- data
+
+dataImputed$steps <- impute(data$steps, fun=mean)
+
+dataStepsImputed_day <- tapply(dataImputed$steps,dataImputed$date,sum) # average of 5 min interval
+
+```
+
+## 7. Histogram of the total number of steps taken each day after missing values are imputed
+
+```{r histogramstepsdayimputed, fig.height=4}  
+
+hist(dataStepsImputed_day, col="red", main="Total steps per day")
+
+```
+
+## 8. Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+
+```{r dataTypevariable, echo=TRUE}
+
+dataImputed$dateType <-  ifelse(as.POSIXlt(dataImputed$date)$wday %in% c(0,6), 'weekend', 'weekday')
+
+averagedataImputed <- aggregate(steps ~ interval + dateType, data=dataImputed, mean)
+
+```
+
+```{r weekdaysweekends, fig.height=4}
+
+ggplot(averagedataImputed, aes(interval, steps)) +
+        geom_line() +
+        facet_grid(dateType ~ .) +
+        xlab("5-minute interval") +
+        ylab("avarage number of steps")
+        
+```        
+
+## 9. All of the R code can reproduce the results (numbers, plots, etc.) in the report
